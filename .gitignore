@@ -1,0 +1,13 @@
+backend/myenv/
+backend/myvenv/
+frontend/node_modules/
+
+__pycache__/
+*.pyc
+
+.env
+.vscode/
+.DS_Store
+
+backend/data/chroma_db/
+backend/data/uploads/

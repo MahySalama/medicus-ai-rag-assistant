@@ -1,0 +1,84 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bg-primary: #080f1a;
+  --bg-secondary: #0d1525;
+  --bg-card: #111b2e;
+  --bg-elevated: #162036;
+  --border-subtle: #1e2d47;
+  --border-active: #22c55e;
+  --text-primary: #e8ecf4;
+  --text-secondary: #8896b0;
+  --text-muted: #5a6a84;
+  --accent: #22c55e;
+  --accent-dim: #166534;
+  --danger: #ef4444;
+  --warning: #f59e0b;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: 'IBM Plex Sans', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--bg-secondary);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border-subtle);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-muted);
+}
+
+/* Markdown content styling in chat */
+.markdown-body h1, .markdown-body h2, .markdown-body h3 {
+  color: var(--text-primary);
+  margin-top: 1em;
+  margin-bottom: 0.5em;
+  font-family: 'DM Sans', sans-serif;
+}
+.markdown-body p {
+  margin: 0.5em 0;
+  line-height: 1.7;
+}
+.markdown-body ul, .markdown-body ol {
+  padding-left: 1.5em;
+  margin: 0.5em 0;
+}
+.markdown-body li {
+  margin: 0.25em 0;
+}
+.markdown-body code {
+  background: var(--bg-secondary);
+  padding: 0.15em 0.4em;
+  border-radius: 4px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.88em;
+}
+.markdown-body pre {
+  background: var(--bg-secondary);
+  padding: 1em;
+  border-radius: 8px;
+  overflow-x: auto;
+}
+.markdown-body strong {
+  color: var(--accent);
+  font-weight: 600;
+}
