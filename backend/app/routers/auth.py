@@ -4,8 +4,7 @@ from sqlalchemy.orm import Session
 from app.database import get_db
 from app.models.user import User
 from app.models.auth_schemas import RegisterRequest, LoginRequest
-from app.utils.security import hash_password, verify_password
-
+from app.utils.security import hash_password, verify_password, create_access_token
 router = APIRouter(prefix="/api/auth", tags=["auth"])
 
 
@@ -46,8 +45,17 @@ def login_user(request: LoginRequest, db: Session = Depends(get_db)):
     if not verify_password(request.password, user.hashed_password):
         raise HTTPException(status_code=401, detail="Invalid email or password")
 
+    access_token = create_access_token(
+        data={
+            "sub": user.email,
+            "user_id": user.id
+        }
+    )
+
     return {
         "message": "Login successful",
+        "access_token": access_token,
+        "token_type": "bearer",
         "user": {
             "id": user.id,
             "full_name": user.full_name,

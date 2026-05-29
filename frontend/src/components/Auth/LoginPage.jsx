@@ -18,6 +18,7 @@ export default function LoginPage({ onLogin }) {
     try {
       const data = await loginUser(email, password)
       localStorage.setItem('medicus_user', JSON.stringify(data.user))
+      localStorage.setItem('medicus_token', data.access_token)
       onLogin(data.user)
       navigate('/')
     } catch (err) {

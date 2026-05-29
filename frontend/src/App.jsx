@@ -11,6 +11,7 @@ function Sidebar({ collapsed, setCollapsed }) {
 
   function handleLogout() {
     localStorage.removeItem('medicus_user')
+    localStorage.removeItem('medicus_token')
     window.location.href = '/login'
   }
 
@@ -110,7 +111,7 @@ function Sidebar({ collapsed, setCollapsed }) {
 
 function AppLayout() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(window.innerWidth < 1024)
-  
+
   const savedUser = localStorage.getItem('medicus_user')
 
   if (!savedUser && window.location.pathname !== '/login' && window.location.pathname !== '/register') {

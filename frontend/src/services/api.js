@@ -1,5 +1,13 @@
 const API_BASE = '/api';
 
+function getAuthHeaders() {
+  const token = localStorage.getItem('medicus_token');
+
+  return token
+    ? { Authorization: `Bearer ${token}` }
+    : {};
+}
+
 export async function fetchHealth() {
   const res = await fetch(`${API_BASE}/health`);
   if (!res.ok) throw new Error('Health check failed');
@@ -7,7 +15,9 @@ export async function fetchHealth() {
 }
 
 export async function fetchStats() {
-  const res = await fetch(`${API_BASE}/stats`);
+  const res = await fetch(`${API_BASE}/stats`, {
+    headers: getAuthHeaders(),
+  });
   if (!res.ok) throw new Error('Failed to fetch stats');
   return res.json();
 }
@@ -18,6 +28,7 @@ export async function uploadDocument(file) {
 
   const res = await fetch(`${API_BASE}/documents/upload`, {
     method: 'POST',
+    headers: getAuthHeaders(),
     body: formData,
   });
 
@@ -29,7 +40,9 @@ export async function uploadDocument(file) {
 }
 
 export async function listDocuments() {
-  const res = await fetch(`${API_BASE}/documents/`);
+  const res = await fetch(`${API_BASE}/documents/`, {
+    headers: getAuthHeaders(),
+  });
   if (!res.ok) throw new Error('Failed to list documents');
   return res.json();
 }
@@ -37,6 +50,7 @@ export async function listDocuments() {
 export async function deleteDocument(docId) {
   const res = await fetch(`${API_BASE}/documents/${docId}`, {
     method: 'DELETE',
+    headers: getAuthHeaders(),
   });
   if (!res.ok) throw new Error('Failed to delete document');
   return res.json();
@@ -45,7 +59,10 @@ export async function deleteDocument(docId) {
 export async function sendMessage(question, conversationId = null) {
   const res = await fetch(`${API_BASE}/chat/`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: {
+      'Content-Type': 'application/json',
+      ...getAuthHeaders(),
+    },
     body: JSON.stringify({
       question,
       conversation_id: conversationId,
