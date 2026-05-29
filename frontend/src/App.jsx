@@ -3,9 +3,16 @@ import { BrowserRouter, Routes, Route, NavLink, useLocation } from 'react-router
 import { LayoutDashboard, MessageCircle, Activity, FileText, Menu, X } from 'lucide-react'
 import Dashboard from './components/Dashboard/Dashboard'
 import ChatPage from './components/Chat/ChatPage'
+import LoginPage from './components/Auth/LoginPage'
+import RegisterPage from './components/Auth/RegisterPage'
 
 function Sidebar({ collapsed, setCollapsed }) {
   const location = useLocation()
+
+  function handleLogout() {
+    localStorage.removeItem('medicus_user')
+    window.location.href = '/login'
+  }
 
   const links = [
     { to: '/', icon: LayoutDashboard, label: 'Dashboard' },
@@ -64,6 +71,30 @@ function Sidebar({ collapsed, setCollapsed }) {
             </NavLink>
           ))}
         </nav>
+        
+        {!collapsed && (
+          <div className="px-3 pb-4">
+            <div className="flex items-center gap-3 rounded-lg bg-[var(--bg-elevated)] border border-[var(--border-subtle)] px-3 py-3">
+              <div className="w-9 h-9 rounded-full bg-medicus-600 flex items-center justify-center text-white font-bold">
+                {JSON.parse(localStorage.getItem('medicus_user') || '{}')?.full_name?.charAt(0) || 'U'}
+              </div>
+              <div className="min-w-0">
+                <p className="text-sm font-medium text-[var(--text-primary)] truncate">
+                  {JSON.parse(localStorage.getItem('medicus_user') || '{}')?.full_name || 'User'}
+                </p>
+                <p className="text-xs text-[var(--text-muted)] truncate">
+                  {JSON.parse(localStorage.getItem('medicus_user') || '{}')?.email || ''}
+                </p>
+                <button
+                  onClick={handleLogout}
+                  className="mt-2 text-xs text-red-400 hover:text-red-300 transition-colors"
+                >
+                  Logout
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Collapse toggle (desktop) */}
         <button
@@ -79,6 +110,12 @@ function Sidebar({ collapsed, setCollapsed }) {
 
 function AppLayout() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(window.innerWidth < 1024)
+  
+  const savedUser = localStorage.getItem('medicus_user')
+
+  if (!savedUser && window.location.pathname !== '/login' && window.location.pathname !== '/register') {
+    window.location.href = '/login'
+  }
 
   return (
     <div className="min-h-screen bg-[var(--bg-primary)]">
@@ -111,6 +148,8 @@ function AppLayout() {
         <Routes>
           <Route path="/" element={<Dashboard />} />
           <Route path="/chat" element={<ChatPage />} />
+          <Route path="/login" element={<LoginPage onLogin={() => {}} />} />
+          <Route path="/register" element={<RegisterPage />} />
         </Routes>
       </main>
     </div>
