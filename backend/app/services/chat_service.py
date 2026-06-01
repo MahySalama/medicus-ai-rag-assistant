@@ -100,9 +100,29 @@ def check_ollama_status() -> tuple[bool, str]:
     """Check if Ollama is running and model is available."""
     try:
         models = ollama.list()
-        model_names = [m.model for m in models.models] if hasattr(models, 'models') else []
+
+        model_names = []
+
+        if hasattr(models, "models"):
+            for model in models.models:
+                if hasattr(model, "model"):
+                    model_names.append(model.model)
+                elif isinstance(model, dict) and "model" in model:
+                    model_names.append(model["model"])
+                elif isinstance(model, dict) and "name" in model:
+                    model_names.append(model["name"])
+
+        elif isinstance(models, dict) and "models" in models:
+            for model in models["models"]:
+                if isinstance(model, dict) and "model" in model:
+                    model_names.append(model["model"])
+                elif isinstance(model, dict) and "name" in model:
+                    model_names.append(model["name"])
+
         if any(settings.OLLAMA_MODEL in name for name in model_names):
             return True, settings.OLLAMA_MODEL
+
         return True, f"Connected but '{settings.OLLAMA_MODEL}' not found. Available: {model_names}"
+
     except Exception as e:
         return False, f"Ollama not reachable: {str(e)}"
