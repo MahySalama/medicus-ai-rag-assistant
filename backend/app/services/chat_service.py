@@ -34,7 +34,7 @@ def build_context(chunks: list[dict]) -> str:
     return "\n\n".join(context_parts)
 
 
-def chat(question: str, conversation_id: str | None = None) -> dict:
+def chat(question: str, user_id: int, conversation_id: str | None = None) -> dict:
     """Process a chat question through the RAG pipeline."""
 
     # Get or create conversation
@@ -44,7 +44,7 @@ def chat(question: str, conversation_id: str | None = None) -> dict:
         conversations[conversation_id] = []
 
     # Step 1: Retrieve relevant chunks
-    relevant_chunks = query_similar(question, n_results=5)
+    relevant_chunks = query_similar(question, user_id=user_id, n_results=5)
 
     # Step 2: Build context
     context = build_context(relevant_chunks)

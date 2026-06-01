@@ -8,6 +8,29 @@ function getAuthHeaders() {
     : {};
 }
 
+function handleUnauthorized(res) {
+  if (res.status === 401) {
+    localStorage.removeItem('medicus_token')
+    localStorage.removeItem('medicus_user')
+    window.location.href = '/login'
+    throw new Error('Session expired. Please log in again.')
+  }
+}
+
+export async function validateSession() {
+  const res = await fetch(`${API_BASE}/stats`, {
+    headers: getAuthHeaders(),
+  })
+
+  handleUnauthorized(res)
+
+  if (!res.ok) {
+    throw new Error('Session validation failed')
+  }
+
+  return res.json()
+}
+
 export async function fetchHealth() {
   const res = await fetch(`${API_BASE}/health`);
   if (!res.ok) throw new Error('Health check failed');
@@ -18,6 +41,9 @@ export async function fetchStats() {
   const res = await fetch(`${API_BASE}/stats`, {
     headers: getAuthHeaders(),
   });
+
+  handleUnauthorized(res)
+
   if (!res.ok) throw new Error('Failed to fetch stats');
   return res.json();
 }
@@ -32,6 +58,8 @@ export async function uploadDocument(file) {
     body: formData,
   });
 
+  handleUnauthorized(res)
+
   if (!res.ok) {
     const err = await res.json().catch(() => ({ detail: 'Upload failed' }));
     throw new Error(err.detail || 'Upload failed');
@@ -43,6 +71,9 @@ export async function listDocuments() {
   const res = await fetch(`${API_BASE}/documents/`, {
     headers: getAuthHeaders(),
   });
+
+  handleUnauthorized(res)
+
   if (!res.ok) throw new Error('Failed to list documents');
   return res.json();
 }
@@ -52,6 +83,9 @@ export async function deleteDocument(docId) {
     method: 'DELETE',
     headers: getAuthHeaders(),
   });
+
+  handleUnauthorized(res)
+
   if (!res.ok) throw new Error('Failed to delete document');
   return res.json();
 }
@@ -68,6 +102,8 @@ export async function sendMessage(question, conversationId = null) {
       conversation_id: conversationId,
     }),
   });
+
+  handleUnauthorized(res)
 
   if (!res.ok) {
     const err = await res.json().catch(() => ({ detail: 'Chat request failed' }));

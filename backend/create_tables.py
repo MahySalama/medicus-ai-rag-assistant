@@ -1,7 +1,8 @@
-from app.database import engine
+from app.database import engine, Base
+
 from app.models.user import User
-from app.database import Base
+from app.models.document import Document
 
 Base.metadata.create_all(bind=engine)
 
-print("Users table created successfully!")
+print("Tables created successfully!")

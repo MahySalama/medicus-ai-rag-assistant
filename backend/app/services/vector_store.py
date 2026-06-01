@@ -62,8 +62,8 @@ def add_chunks(chunks: list[dict], doc_id: str):
     return len(ids)
 
 
-def query_similar(question: str, n_results: int = 5) -> list[dict]:
-    """Query ChromaDB for chunks similar to the question."""
+def query_similar(question: str, user_id: int, n_results: int = 5) -> list[dict]:
+    """Query ChromaDB for chunks similar to the question, limited to one user."""
     collection = get_collection()
 
     if collection.count() == 0:
@@ -73,11 +73,16 @@ def query_similar(question: str, n_results: int = 5) -> list[dict]:
 
     results = collection.query(
         query_embeddings=[query_embedding],
-        n_results=min(n_results, collection.count()),
+        n_results=n_results,
+        where={"user_id": user_id},
         include=["documents", "metadatas", "distances"],
     )
 
     chunks = []
+
+    if not results["ids"] or not results["ids"][0]:
+        return chunks
+
     for i in range(len(results["ids"][0])):
         chunks.append({
             "id": results["ids"][0][i],

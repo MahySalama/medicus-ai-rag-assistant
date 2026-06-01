@@ -1,13 +1,17 @@
 import React, { useState, useEffect } from 'react'
-import { BrowserRouter, Routes, Route, NavLink, useLocation } from 'react-router-dom'
-import { LayoutDashboard, MessageCircle, Activity, FileText, Menu, X } from 'lucide-react'
+import { BrowserRouter, Routes, Route, NavLink } from 'react-router-dom'
+import { LayoutDashboard, MessageCircle, Activity, Menu } from 'lucide-react'
 import Dashboard from './components/Dashboard/Dashboard'
 import ChatPage from './components/Chat/ChatPage'
 import LoginPage from './components/Auth/LoginPage'
 import RegisterPage from './components/Auth/RegisterPage'
+import { validateSession } from './services/api'
 
 function Sidebar({ collapsed, setCollapsed }) {
-  const location = useLocation()
+  const savedToken = localStorage.getItem('medicus_token')
+  const savedUserRaw = localStorage.getItem('medicus_user')
+  const savedUser = savedUserRaw ? JSON.parse(savedUserRaw) : null
+  const isLoggedIn = Boolean(savedToken && savedUser?.email)
 
   function handleLogout() {
     localStorage.removeItem('medicus_user')
@@ -75,28 +79,34 @@ function Sidebar({ collapsed, setCollapsed }) {
         
         {!collapsed && (
           <div className="px-3 pb-4">
-            <div className="flex items-center gap-3 rounded-lg bg-[var(--bg-elevated)] border border-[var(--border-subtle)] px-3 py-3">
-              <div className="w-9 h-9 rounded-full bg-medicus-600 flex items-center justify-center text-white font-bold">
-                {JSON.parse(localStorage.getItem('medicus_user') || '{}')?.full_name?.charAt(0) || 'U'}
+            {isLoggedIn ? (
+              <div className="flex items-center gap-3 rounded-lg bg-[var(--bg-elevated)] border border-[var(--border-subtle)] px-3 py-3">
+                <div className="w-9 h-9 rounded-full bg-medicus-600 flex items-center justify-center text-white font-bold">
+                  {savedUser.full_name?.charAt(0) || savedUser.email?.charAt(0)?.toUpperCase() || 'U'}
+                </div>
+                <div className="min-w-0">
+                  <p className="text-sm font-medium text-[var(--text-primary)] truncate">
+                    {savedUser.full_name || savedUser.email}
+                  </p>
+                  <p className="text-xs text-[var(--text-muted)] truncate">
+                    {savedUser.email}
+                  </p>
+                  <button
+                    onClick={handleLogout}
+                    className="mt-2 text-xs text-red-400 hover:text-red-300 transition-colors"
+                  >
+                    Logout
+                  </button>
+                </div>
               </div>
-              <div className="min-w-0">
-                <p className="text-sm font-medium text-[var(--text-primary)] truncate">
-                  {JSON.parse(localStorage.getItem('medicus_user') || '{}')?.full_name || 'User'}
-                </p>
-                <p className="text-xs text-[var(--text-muted)] truncate">
-                  {JSON.parse(localStorage.getItem('medicus_user') || '{}')?.email || ''}
-                </p>
-                <button
-                  onClick={handleLogout}
-                  className="mt-2 text-xs text-red-400 hover:text-red-300 transition-colors"
-                >
-                  Logout
-                </button>
+            ) : (
+              <div className="rounded-lg bg-[var(--bg-elevated)] border border-[var(--border-subtle)] px-3 py-3">
+                <p className="text-sm font-medium text-[var(--text-primary)]">Not signed in</p>
+                <p className="text-xs text-[var(--text-muted)] mt-1">Please log in to use Medicus</p>
               </div>
-            </div>
+            )}
           </div>
         )}
-
         {/* Collapse toggle (desktop) */}
         <button
           onClick={() => setCollapsed(!collapsed)}
@@ -112,9 +122,17 @@ function Sidebar({ collapsed, setCollapsed }) {
 function AppLayout() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(window.innerWidth < 1024)
 
-  const savedUser = localStorage.getItem('medicus_user')
+  useEffect(() => {
+    const token = localStorage.getItem('medicus_token')
 
-  if (!savedUser && window.location.pathname !== '/login' && window.location.pathname !== '/register') {
+    if (!token) return
+
+    validateSession().catch(() => {})
+  }, [])
+
+  const savedToken = localStorage.getItem('medicus_token')
+
+  if (!savedToken && window.location.pathname !== '/login' && window.location.pathname !== '/register') {
     window.location.href = '/login'
   }
 

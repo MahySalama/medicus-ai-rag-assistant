@@ -24,7 +24,7 @@ def _save_registry(registry: dict):
         json.dump(registry, f, indent=2)
 
 
-def process_pdf(file_path: str, filename: str) -> dict:
+def process_pdf(file_path: str, filename: str, user_id: int) -> dict:
     """Extract text from PDF, chunk it, and store embeddings."""
     reader = PdfReader(file_path)
     page_count = len(reader.pages)
@@ -60,6 +60,7 @@ def process_pdf(file_path: str, filename: str) -> dict:
                     "filename": filename,
                     "page": page_num + 1,
                     "total_pages": page_count,
+                    "user_id": user_id,
                 },
             })
 
@@ -77,6 +78,7 @@ def process_pdf(file_path: str, filename: str) -> dict:
         "uploaded_at": datetime.now().isoformat(),
         "size_bytes": file_size,
         "file_path": file_path,
+        "user_id": user_id,
     }
 
     registry = _load_registry()
@@ -86,29 +88,36 @@ def process_pdf(file_path: str, filename: str) -> dict:
     return doc_info
 
 
-def get_all_documents() -> list[dict]:
+def get_all_documents(user_id: int) -> list[dict]:
     registry = _load_registry()
-    return list(registry.values())
+    return [
+        doc for doc in registry.values()
+        if doc.get("user_id") == user_id
+    ]
 
 
-def delete_document(doc_id: str) -> bool:
+def delete_document(doc_id: str, user_id: int) -> bool:
     from app.services.vector_store import delete_doc_chunks
 
     registry = _load_registry()
+
     if doc_id not in registry:
         return False
 
-    # Delete file
-    file_path = registry[doc_id].get("file_path")
+    doc = registry[doc_id]
+
+    if doc.get("user_id") != user_id:
+        return False
+
+    file_path = doc.get("file_path")
     if file_path and os.path.exists(file_path):
         os.remove(file_path)
 
-    # Delete chunks
     delete_doc_chunks(doc_id)
 
-    # Remove from registry
     del registry[doc_id]
     _save_registry(registry)
+
     return True
 
 

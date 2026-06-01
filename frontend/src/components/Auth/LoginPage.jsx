@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { Activity, Mail, Lock } from 'lucide-react'
 import { loginUser } from '../../services/api'
@@ -10,6 +10,14 @@ export default function LoginPage({ onLogin }) {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
+  useEffect(() => {
+    const token = localStorage.getItem('medicus_token')
+
+    if (token) {
+      navigate('/')
+    }
+  }, [navigate])
+
   async function handleSubmit(e) {
     e.preventDefault()
     setError('')
@@ -20,7 +28,7 @@ export default function LoginPage({ onLogin }) {
       localStorage.setItem('medicus_user', JSON.stringify(data.user))
       localStorage.setItem('medicus_token', data.access_token)
       onLogin(data.user)
-      navigate('/')
+      window.location.href = '/'
     } catch (err) {
       setError(err.message)
     } finally {
@@ -52,6 +60,7 @@ export default function LoginPage({ onLogin }) {
               <Mail className="w-4 h-4 absolute left-3 top-3.5 text-[var(--text-muted)]" />
               <input
                 type="email"
+                autoComplete="username"
                 className="w-full pl-10 pr-4 py-3 rounded-lg bg-[var(--bg-primary)] border border-[var(--border-subtle)] text-[var(--text-primary)] outline-none focus:border-medicus-500"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
@@ -66,6 +75,7 @@ export default function LoginPage({ onLogin }) {
               <Lock className="w-4 h-4 absolute left-3 top-3.5 text-[var(--text-muted)]" />
               <input
                 type="password"
+                autoComplete="current-password"
                 className="w-full pl-10 pr-4 py-3 rounded-lg bg-[var(--bg-primary)] border border-[var(--border-subtle)] text-[var(--text-primary)] outline-none focus:border-medicus-500"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}

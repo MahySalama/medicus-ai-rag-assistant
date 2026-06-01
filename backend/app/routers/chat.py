@@ -11,6 +11,7 @@ async def send_message(request: ChatRequest, current_user=Depends(get_current_us
     """Send a message to Medicus and get a RAG-powered response."""
     result = chat(
         question=request.question,
+        user_id=current_user.id,
         conversation_id=request.conversation_id,
     )
     return ChatResponse(**result)

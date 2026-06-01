@@ -1,15 +1,19 @@
 import os
-import shutil
-from fastapi import APIRouter, UploadFile, File, HTTPException
+from fastapi import APIRouter, UploadFile, File, HTTPException, Depends
+
 from app.config import settings
 from app.services.pdf_service import process_pdf, get_all_documents, delete_document
 from app.models.schemas import DocumentInfo
+from app.utils.auth_dependency import get_current_user
 
 router = APIRouter(prefix="/api/documents", tags=["documents"])
 
 
 @router.post("/upload", response_model=DocumentInfo)
-async def upload_document(file: UploadFile = File(...)):
+async def upload_document(
+    file: UploadFile = File(...),
+    current_user=Depends(get_current_user)
+):
     """Upload and process a PDF document."""
     if not file.filename.lower().endswith(".pdf"):
         raise HTTPException(status_code=400, detail="Only PDF files are supported.")
@@ -31,7 +35,7 @@ async def upload_document(file: UploadFile = File(...)):
         f.write(content)
 
     try:
-        doc_info = process_pdf(file_path, file.filename)
+        doc_info = process_pdf(file_path, file.filename, current_user.id)
         return DocumentInfo(**doc_info)
     except Exception as e:
         # Clean up on failure
@@ -41,16 +45,16 @@ async def upload_document(file: UploadFile = File(...)):
 
 
 @router.get("/", response_model=list[DocumentInfo])
-async def list_documents():
+async def list_documents(current_user=Depends(get_current_user)):
     """List all uploaded documents."""
-    docs = get_all_documents()
+    docs = get_all_documents(current_user.id)
     return [DocumentInfo(**doc) for doc in docs]
 
 
 @router.delete("/{doc_id}")
-async def remove_document(doc_id: str):
+async def remove_document(doc_id: str, current_user=Depends(get_current_user)):
     """Delete a document and its chunks."""
-    success = delete_document(doc_id)
+    success = delete_document(doc_id, current_user.id)
     if not success:
         raise HTTPException(status_code=404, detail="Document not found.")
     return {"status": "deleted", "doc_id": doc_id}
