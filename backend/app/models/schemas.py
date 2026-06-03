@@ -37,3 +37,11 @@ class HealthResponse(BaseModel):
     ollama_connected: bool
     model_loaded: str
     vector_store_ready: bool
+
+
+class ChatHistoryItem(BaseModel):
+    id: int
+    conversation_id: str
+    question: str
+    answer: str
+    created_at: datetime
