@@ -3,6 +3,9 @@ import ollama
 from app.config import settings
 from app.services.vector_store import query_similar
 
+from sqlalchemy.orm import Session
+from app.models.chat_message import ChatMessage
+
 # Simple in-memory conversation store
 conversations: dict[str, list[dict]] = {}
 
@@ -34,7 +37,12 @@ def build_context(chunks: list[dict]) -> str:
     return "\n\n".join(context_parts)
 
 
-def chat(question: str, user_id: int, conversation_id: str | None = None) -> dict:
+def chat(
+    question: str,
+    user_id: int,
+    conversation_id: str | None = None,
+    db: Session | None = None,
+) -> dict:
     """Process a chat question through the RAG pipeline."""
 
     # Get or create conversation
@@ -74,6 +82,17 @@ def chat(question: str, user_id: int, conversation_id: str | None = None) -> dic
     # Step 5: Store in conversation history
     conversations[conversation_id].append({"role": "user", "content": question})
     conversations[conversation_id].append({"role": "assistant", "content": answer})
+
+    if db:
+        chat_message = ChatMessage(
+            user_id=user_id,
+            conversation_id=conversation_id,
+            question=question,
+            answer=answer,
+        )
+
+        db.add(chat_message)
+        db.commit()
 
     # Step 6: Build sources
     sources = []
