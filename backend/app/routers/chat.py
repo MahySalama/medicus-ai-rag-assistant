@@ -38,3 +38,25 @@ async def get_chat_history(
         .all()
     )
     return history
+
+
+@router.delete("/history/{conversation_id}")
+async def delete_chat_history(
+    conversation_id: str,
+    current_user=Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    deleted_count = (
+        db.query(ChatMessage)
+        .filter(ChatMessage.conversation_id == conversation_id)
+        .filter(ChatMessage.user_id == current_user.id)
+        .delete()
+    )
+
+    db.commit()
+
+    return {
+        "message": "Chat history deleted successfully",
+        "conversation_id": conversation_id,
+        "deleted_count": deleted_count,
+    }
