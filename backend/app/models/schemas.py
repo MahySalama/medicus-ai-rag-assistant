@@ -45,3 +45,9 @@ class ChatHistoryItem(BaseModel):
     question: str
     answer: str
     created_at: datetime
+
+
+class ConversationSummary(BaseModel):
+    conversation_id: str
+    title: str
+    created_at: datetime

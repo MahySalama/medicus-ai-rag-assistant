@@ -112,6 +112,68 @@ export async function sendMessage(question, conversationId = null) {
   return res.json();
 }
 
+
+export async function getConversations() {
+  const res = await fetch(`${API_BASE}/chat/conversations`, {
+    headers: getAuthHeaders(),
+  })
+
+  handleUnauthorized(res)
+
+  if (!res.ok) {
+    throw new Error('Failed to fetch conversations')
+  }
+
+  return res.json()
+}
+
+
+export async function getChatHistory() {
+  const res = await fetch(`${API_BASE}/chat/history`, {
+    headers: getAuthHeaders(),
+  })
+
+  handleUnauthorized(res)
+
+  if (!res.ok) {
+    throw new Error('Failed to fetch chat history')
+  }
+
+  return res.json()
+}
+
+
+export async function getConversationMessages(conversationId) {
+  const res = await fetch(`${API_BASE}/chat/history/${conversationId}`, {
+    headers: getAuthHeaders(),
+  })
+
+  handleUnauthorized(res)
+
+  if (!res.ok) {
+    throw new Error('Failed to fetch conversation messages')
+  }
+
+  return res.json()
+}
+
+
+export async function deleteChatHistory(conversationId) {
+  const res = await fetch(`${API_BASE}/chat/history/${conversationId}`, {
+    method: 'DELETE',
+    headers: getAuthHeaders(),
+  })
+
+  handleUnauthorized(res)
+
+  if (!res.ok) {
+    throw new Error('Failed to delete chat history')
+  }
+
+  return res.json()
+}
+
+
 export async function registerUser(fullName, email, password) {
   const res = await fetch(`${API_BASE}/auth/register`, {
     method: 'POST',

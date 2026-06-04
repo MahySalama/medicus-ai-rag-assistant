@@ -1,5 +1,10 @@
 from fastapi import APIRouter, Depends
-from app.models.schemas import ChatRequest, ChatResponse, ChatHistoryItem
+from app.models.schemas import (
+    ChatRequest,
+    ChatResponse,
+    ChatHistoryItem,
+    ConversationSummary,
+)
 from app.services.chat_service import chat
 from app.utils.auth_dependency import get_current_user
 
@@ -40,6 +45,23 @@ async def get_chat_history(
     return history
 
 
+@router.get("/history/{conversation_id}", response_model=list[ChatHistoryItem])
+async def get_conversation_messages(
+    conversation_id: str,
+    current_user=Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    messages = (
+        db.query(ChatMessage)
+        .filter(ChatMessage.user_id == current_user.id)
+        .filter(ChatMessage.conversation_id == conversation_id)
+        .order_by(ChatMessage.created_at.asc())
+        .all()
+    )
+
+    return messages
+
+
 @router.delete("/history/{conversation_id}")
 async def delete_chat_history(
     conversation_id: str,
@@ -60,3 +82,28 @@ async def delete_chat_history(
         "conversation_id": conversation_id,
         "deleted_count": deleted_count,
     }
+
+
+@router.get("/conversations", response_model=list[ConversationSummary])
+async def get_conversations(
+    current_user=Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    messages = (
+        db.query(ChatMessage)
+        .filter(ChatMessage.user_id == current_user.id)
+        .order_by(ChatMessage.created_at.desc())
+        .all()
+    )
+
+    conversations = {}
+
+    for message in messages:
+        if message.conversation_id not in conversations:
+            conversations[message.conversation_id] = {
+                "conversation_id": message.conversation_id,
+                "title": message.question,
+                "created_at": message.created_at,
+            }
+
+    return list(conversations.values())
