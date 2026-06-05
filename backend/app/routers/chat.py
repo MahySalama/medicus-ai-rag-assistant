@@ -9,6 +9,7 @@ from app.services.chat_service import chat
 from app.utils.auth_dependency import get_current_user
 
 from sqlalchemy.orm import Session
+from sqlalchemy import func
 from app.database import get_db
 from app.models.chat_message import ChatMessage
 
@@ -92,7 +93,7 @@ async def get_conversations(
     messages = (
         db.query(ChatMessage)
         .filter(ChatMessage.user_id == current_user.id)
-        .order_by(ChatMessage.created_at.desc())
+        .order_by(ChatMessage.created_at.asc())
         .all()
     )
 
@@ -104,6 +105,22 @@ async def get_conversations(
                 "conversation_id": message.conversation_id,
                 "title": message.question,
                 "created_at": message.created_at,
+                "last_updated": message.created_at,
             }
 
-    return list(conversations.values())
+        conversations[message.conversation_id]["last_updated"] = message.created_at
+
+    sorted_conversations = sorted(
+        conversations.values(),
+        key=lambda item: item["last_updated"],
+        reverse=True,
+    )
+
+    return [
+        {
+            "conversation_id": item["conversation_id"],
+            "title": item["title"],
+            "created_at": item["last_updated"],
+        }
+        for item in sorted_conversations
+    ]

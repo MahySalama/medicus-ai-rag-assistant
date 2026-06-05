@@ -203,9 +203,10 @@ export default function ChatPage() {
             </div>
             <button
               onClick={resetChat}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-elevated)] transition-colors"
+              className="flex items-center gap-2 px-3 py-2 rounded-lg bg-medicus-600 text-white hover:bg-medicus-500 transition-colors font-medium"
             >
-              <RotateCcw className="w-3.5 h-3.5" /> New Chat
+              <RotateCcw className="w-4 h-4" />
+              New Chat
             </button>
           </div>
         </div>
