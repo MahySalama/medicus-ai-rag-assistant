@@ -1,10 +1,12 @@
 import uuid
-import ollama
+from ollama import Client
 from app.config import settings
 from app.services.vector_store import query_similar
 
 from sqlalchemy.orm import Session
 from app.models.chat_message import ChatMessage
+
+ollama_client = Client(host=settings.OLLAMA_BASE_URL)
 
 # Simple in-memory conversation store
 conversations: dict[str, list[dict]] = {}
@@ -71,7 +73,7 @@ def chat(
 
     # Step 4: Query Ollama
     try:
-        response = ollama.chat(
+        response = ollama_client.chat(
             model=settings.OLLAMA_MODEL,
             messages=messages,
         )
@@ -118,7 +120,7 @@ def chat(
 def check_ollama_status() -> tuple[bool, str]:
     """Check if Ollama is running and model is available."""
     try:
-        models = ollama.list()
+        models = ollama_client.list()
 
         model_names = []
 

@@ -1,4 +1,16 @@
 services:
+  postgres:
+    image: postgres:16
+    container_name: medicus-postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: Mahy
+      POSTGRES_DB: medicus
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
   backend:
     build: ./backend
     container_name: medicus-backend
@@ -6,11 +18,18 @@ services:
       - ./backend/.env
     ports:
       - "8000:8000"
+    depends_on:
+      - postgres
 
   frontend:
     build: ./frontend
     container_name: medicus-frontend
+    environment:
+      - VITE_API_URL=http://localhost:8000/api
     ports:
       - "5173:5173"
     depends_on:
       - backend
+
+volumes:
+  postgres_data:

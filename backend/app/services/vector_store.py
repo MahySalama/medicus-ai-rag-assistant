@@ -1,8 +1,10 @@
 import chromadb
-import ollama
+from ollama import Client
 import hashlib
 from typing import Optional
 from app.config import settings
+
+ollama_client = Client(host=settings.OLLAMA_BASE_URL)
 
 # Singleton client
 _chroma_client: Optional[chromadb.PersistentClient] = None
@@ -29,7 +31,7 @@ def get_collection():
 
 def generate_embedding(text: str) -> list[float]:
     """Generate embedding using Ollama's embedding model."""
-    response = ollama.embed(model=settings.OLLAMA_EMBED_MODEL, input=text)
+    response = ollama_client.embed(model=settings.OLLAMA_EMBED_MODEL, input=text)
     return response["embeddings"][0]
 
 
