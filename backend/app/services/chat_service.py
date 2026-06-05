@@ -1,10 +1,12 @@
 import uuid
 from ollama import Client
 from app.config import settings
-from app.services.vector_store import query_similar
 
 from sqlalchemy.orm import Session
 from app.models.chat_message import ChatMessage
+
+from app.services.agent_graph import agent_graph
+from app.services.rag_utils import build_context
 
 ollama_client = Client(host=settings.OLLAMA_BASE_URL)
 
@@ -53,11 +55,28 @@ def chat(
     if conversation_id not in conversations:
         conversations[conversation_id] = []
 
-    # Step 1: Retrieve relevant chunks
-    relevant_chunks = query_similar(question, user_id=user_id, n_results=5)
+    # LangGraph Step 1: Route the question
+    graph_state = agent_graph.invoke({
+        "question": question,
+        "user_id": user_id,
+        "conversation_id": conversation_id,
+        "chunks": [],
+        "context": "",
+        "answer": "",
+        "sources": [],
+        "route": "",
+        "analysis_type": "",
+    })
 
-    # Step 2: Build context
-    context = build_context(relevant_chunks)
+    route = graph_state["route"]
+    analysis_type = graph_state["analysis_type"]
+
+    print(f"LangGraph route selected: {route}", flush=True)
+    print(f"LangGraph analysis type: {analysis_type}", flush=True)
+
+    # Step 1: Use LangGraph retrieval result
+    relevant_chunks = graph_state["chunks"]
+    context = graph_state["context"]
 
     # Step 3: Build messages for Ollama
     system_message = SYSTEM_PROMPT.format(context=context)
