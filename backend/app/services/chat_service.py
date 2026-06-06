@@ -90,15 +90,22 @@ def chat(
     # Add current question
     messages.append({"role": "user", "content": question})
 
-    # Step 4: Query Ollama
-    try:
-        response = ollama_client.chat(
-            model=settings.OLLAMA_MODEL,
-            messages=messages,
+    # Step 4: Query LLM provider
+    if settings.LLM_PROVIDER == "demo":
+        answer = (
+            "Medicus is running in free hosted demo mode. "
+            "The full RAG pipeline with Ollama works locally, but live AI generation is disabled online to avoid paid LLM or cloud compute costs. "
+            "This demo still shows authentication, document management, chat history, user isolation, FastAPI backend deployment, PostgreSQL integration, and the production-ready application structure."
         )
-        answer = response["message"]["content"]
-    except Exception as e:
-        answer = f"Error communicating with Ollama: {str(e)}. Make sure Ollama is running with `ollama serve` and the model '{settings.OLLAMA_MODEL}' is pulled."
+    else:
+        try:
+            response = ollama_client.chat(
+                model=settings.OLLAMA_MODEL,
+                messages=messages,
+            )
+            answer = response["message"]["content"]
+        except Exception as e:
+            answer = f"Error communicating with Ollama: {str(e)}. Make sure Ollama is running with `ollama serve` and the model '{settings.OLLAMA_MODEL}' is pulled."
 
     # Step 5: Store in conversation history
     conversations[conversation_id].append({"role": "user", "content": question})
@@ -138,6 +145,10 @@ def chat(
 
 def check_ollama_status() -> tuple[bool, str]:
     """Check if Ollama is running and model is available."""
+
+    if settings.LLM_PROVIDER == "demo":
+        return True, "demo-mode"
+    
     try:
         models = ollama_client.list()
 
