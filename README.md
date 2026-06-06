@@ -257,9 +257,9 @@ http://localhost:8000/docs
 
 ---
 
-# Production Status
+# Deployment Status
 
-## Currently Available in Production
+## Deployed Features
 
 * Frontend Deployment (Vercel)
 * Backend Deployment (Render)
