@@ -2,11 +2,18 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.routers import chat, documents, health, auth
 
+from app.database import Base, engine
+from app.models.user import User
+from app.models.document import Document
+from app.models.chat_message import ChatMessage
+
 app = FastAPI(
     title="Medicus API",
     description="RAG-powered medical assistant API using Ollama + ChromaDB",
     version="1.0.0",
 )
+
+Base.metadata.create_all(bind=engine)
 
 # CORS for React frontend
 app.add_middleware(
