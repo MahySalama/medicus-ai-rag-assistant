@@ -11,3 +11,5 @@ __pycache__/
 
 backend/data/chroma_db/
 backend/data/uploads/
+
+frontend/dist/
